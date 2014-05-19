@@ -26,7 +26,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -41,8 +40,6 @@ public class QuickRecordingsDialog extends Activity  {
             "com.android.systemui.quicksettings.PLAY_RECORDING";
     private static final String RECORDING_NAME = "QuickRecord ";
     private static final String RECORDING_TYPE = ".3gp";
-
-    private int mItems;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -63,37 +60,23 @@ public class QuickRecordingsDialog extends Activity  {
             }
         }
 
-        mItems = recordings.length;
-
         ListView list = new ListView(this);
         list.setAdapter(new ArrayAdapter<String> (this,
                 android.R.layout.select_dialog_item, dialogEntries));
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> arg0, View view, int item, long id) {
-                if (recordings[item] != null) {
-                    Intent intent = new Intent(PLAY_RECORDING);
-                    intent.putExtra("file", recordings[item].getAbsolutePath());
-                    QuickRecordingsDialog.this.sendBroadcast(intent);
-                }
+                Intent intent = new Intent(PLAY_RECORDING);
+                intent.putExtra("file", recordings[item].getAbsolutePath());
+                QuickRecordingsDialog.this.sendBroadcast(intent);
             }
         });
         list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             public boolean onItemLongClick(AdapterView<?> arg0, View view, int item, long id) {
-                if (recordings[item] != null) {
-                    recordings[item].delete();
-                    TextView textView = (TextView) view;
-                    textView.setText(R.string.quick_settings_quick_record_deleted);
-                    Intent intent = new Intent(PLAY_RECORDING);
-                    QuickRecordingsDialog.this.sendBroadcast(intent);
-                    recordings[item] = null;
-                    mItems--;
-                    if (mItems <= 0) {
-                        QuickRecordingsDialog.this.finish();
-                    }
-                    return true;
-                } else {
-                    return false;
-                }
+                recordings[item].delete();
+                Intent intent = new Intent(PLAY_RECORDING);
+                QuickRecordingsDialog.this.sendBroadcast(intent);
+                QuickRecordingsDialog.this.finish();
+                return true;
             }
         });
         AlertDialog.Builder action = new AlertDialog.Builder(this);
