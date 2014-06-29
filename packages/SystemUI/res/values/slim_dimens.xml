@@ -25,4 +25,9 @@
     <!-- Network stats text size -->
     <dimen name="network_stats_text_size">9dp</dimen>
 
+    <!-- Hover dimens -->
+    <dimen name="hover_height">64dp</dimen>
+    <dimen name="hover_cling_width">-1px</dimen>
+
+
 </resources>
