@@ -37,6 +37,7 @@ import com.android.systemui.qs.tiles.BluetoothTile;
 import com.android.systemui.qs.tiles.CastTile;
 import com.android.systemui.qs.tiles.CellularTile;
 import com.android.systemui.qs.tiles.ColorInversionTile;
+import com.android.systemui.qs.tiles.CompassTile;
 import com.android.systemui.qs.tiles.DndTile;
 import com.android.systemui.qs.tiles.EditTile;
 import com.android.systemui.qs.tiles.FlashlightTile;
@@ -289,6 +290,7 @@ public class QSTileHost implements QSTile.Host, Tunable {
         else if (tileSpec.equals("cast")) return new CastTile(this);
         else if (tileSpec.equals("hotspot")) return new HotspotTile(this);
         else if (tileSpec.equals("edit")) return new EditTile(this);
+        else if (tileSpec.equals("compass")) return new CompassTile(this);
         else if (tileSpec.startsWith(IntentTile.PREFIX)) return IntentTile.create(this,tileSpec);
         else throw new IllegalArgumentException("Bad tile spec: " + tileSpec);
     }
@@ -358,6 +360,7 @@ public class QSTileHost implements QSTile.Host, Tunable {
         else if (spec.equals("hotspot")) return R.string.quick_settings_hotspot_label;
         else if (spec.equals("edit")) return R.string.quick_settings_edit_label;
         else if (spec.equals("adb_network")) return R.string.qs_tile_adb_over_network;
+        else if (spec.equals("compass")) return R.string.qs_tile_compass;
         return 0;
     }
 }
