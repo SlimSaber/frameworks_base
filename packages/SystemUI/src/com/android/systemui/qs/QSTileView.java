@@ -64,7 +64,7 @@ public class QSTileView extends ViewGroup {
     private boolean mDual;
     private OnClickListener mClickPrimary;
     private OnClickListener mClickSecondary;
-    private OnLongClickListener mLongClick;
+    private OnLongClickListener mClickLong;
     private Drawable mTileBackground;
     private RippleDrawable mRipple;
 
@@ -131,7 +131,9 @@ public class QSTileView extends ViewGroup {
         }
         if (mDualLabel != null) {
             labelText = mDualLabel.getText();
-            labelDescription = mLabel.getContentDescription();
+            if (mLabel != null) {
+                labelDescription = mLabel.getContentDescription();
+            }
             removeView(mDualLabel);
             mDualLabel = null;
         }
@@ -177,15 +179,12 @@ public class QSTileView extends ViewGroup {
     public boolean setDual(boolean dual) {
         final boolean changed = dual != mDual;
         mDual = dual;
-        if (changed) {
-            recreateLabel();
-        }
         if (mTileBackground instanceof RippleDrawable) {
             setRipple((RippleDrawable) mTileBackground);
         }
         if (dual) {
             mTopBackgroundView.setOnClickListener(mClickPrimary);
-            mTopBackgroundView.setOnLongClickListener(mLongClick);
+            mTopBackgroundView.setOnLongClickListener(mClickLong);
             setOnClickListener(null);
             setClickable(false);
             setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
@@ -194,13 +193,17 @@ public class QSTileView extends ViewGroup {
             mTopBackgroundView.setOnClickListener(null);
             mTopBackgroundView.setClickable(false);
             setOnClickListener(mClickPrimary);
-            setOnLongClickListener(mLongClick);
+            setOnLongClickListener(mClickLong);
             setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
             setBackground(mTileBackground);
         }
         mTopBackgroundView.setFocusable(dual);
         setFocusable(!dual);
         mDivider.setVisibility(dual ? VISIBLE : GONE);
+        if (changed) {
+            recreateLabel();
+            updateTopPadding();
+        }
         postInvalidate();
         return changed;
     }
@@ -212,11 +215,10 @@ public class QSTileView extends ViewGroup {
         }
     }
 
-    public void init(OnClickListener clickPrimary, OnClickListener clickSecondary,
-            OnLongClickListener longClick) {
+    public void init(OnClickListener clickPrimary, OnClickListener clickSecondary, OnLongClickListener clickLong) {
         mClickPrimary = clickPrimary;
         mClickSecondary = clickSecondary;
-        mLongClick = longClick;
+        mClickLong = clickLong;
     }
 
     protected View createIcon() {
@@ -286,7 +288,7 @@ public class QSTileView extends ViewGroup {
     private void updateRippleSize(int width, int height) {
         // center the touch feedback on the center of the icon, and dial it down a bit
         final int cx = width / 2;
-        final int cy = mDual ? mIcon.getTop() + mIcon.getHeight() / 2 : height / 2;
+        final int cy = mDual ? mIcon.getTop() + mIcon.getHeight() : height / 2;
         final int rad = (int)(mIcon.getHeight() * 1.25f);
         mRipple.setHotspotBounds(cx - rad, cy - rad, cx + rad, cy + rad);
     }

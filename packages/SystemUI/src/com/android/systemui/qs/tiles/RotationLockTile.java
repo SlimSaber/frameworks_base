@@ -18,7 +18,6 @@ package com.android.systemui.qs.tiles;
 
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.provider.Settings;
 
 import com.android.internal.logging.MetricsLogger;

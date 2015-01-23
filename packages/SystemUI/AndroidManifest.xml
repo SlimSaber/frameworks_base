@@ -85,6 +85,10 @@
     <uses-permission android:name="android.permission.MANAGE_ACTIVITY_STACKS" />
     <uses-permission android:name="android.permission.START_TASKS_FROM_RECENTS" />
 
+    <!-- Reboot -->
+    <uses-permission android:name="android.permission.REBOOT" />
+    <uses-permission android:name="android.permission.RECOVERY" />
+
     <!-- WindowManager -->
     <uses-permission android:name="android.permission.INTERNAL_SYSTEM_WINDOW" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
@@ -126,6 +130,10 @@
 
     <!-- Screen Capturing -->
     <uses-permission android:name="android.permission.MANAGE_MEDIA_PROJECTION" />
+
+    <!-- Sync tile -->
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
 
     <!-- Assist -->
     <uses-permission android:name="android.permission.ACCESS_VOICE_INTERACTION_SERVICE" />
@@ -220,14 +228,6 @@
             </intent-filter>
             <meta-data android:name="com.android.settings.category"
                     android:value="com.android.settings.category.system" />-->
-        </activity>
-
-        <activity android:name=".tuner.QsTunerActivity"
-                  android:enabled="true"
-                  android:theme="@android:style/Theme.Material.Settings"
-                  android:label="@string/quick_settings"
-                  android:process=":tuner"
-                  android:exported="true">
         </activity>
 
         <activity android:name=".tuner.StatusBarActivity"

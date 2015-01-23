@@ -16,10 +16,12 @@
 
 package com.android.systemui.qs.tiles;
 
+import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,6 +44,8 @@ public class CellularTile extends QSTile<QSTile.SignalState> {
     private static final Intent CELLULAR_SETTINGS = new Intent().setComponent(new ComponentName(
             "com.android.settings", "com.android.settings.Settings$DataUsageSummaryActivity"));
     private static final Intent WIRELESS_SETTINGS = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
+    private static final Intent DATA_USAGE_SETTINGS = new Intent().setComponent(new ComponentName(
+            "com.android.settings", "com.android.settings.Settings$DataUsageSummaryActivity"));
 
     private final NetworkController mController;
     private final MobileDataController mDataController;
@@ -81,7 +85,23 @@ public class CellularTile extends QSTile<QSTile.SignalState> {
     }
 
     @Override
+    protected void handleUserSwitch(int newUserId) {
+        if (newUserId != UserHandle.USER_OWNER) {
+            refreshState();
+        }
+    }
+
+    @Override
     protected void handleClick() {
+        if (mDataController.isMobileDataSupported()) {
+            mDataController.setMobileDataEnabled(!mDataController.isMobileDataEnabled());
+        } else {
+            mHost.startActivityDismissingKeyguard(DATA_USAGE_SETTINGS);
+        }
+    }
+
+    @Override
+    protected void handleSecondaryClick() {
         MetricsLogger.action(mContext, getMetricsCategory());
         if (mDataController.isMobileDataSupported()) {
             showDetail(true);
@@ -97,7 +117,8 @@ public class CellularTile extends QSTile<QSTile.SignalState> {
 
     @Override
     protected void handleUpdateState(SignalState state, Object arg) {
-        state.visible = mController.hasMobileDataFeature();
+        state.visible = mController.hasMobileDataFeature()
+                && (ActivityManager.getCurrentUser() == UserHandle.USER_OWNER);
         if (!state.visible) return;
         CallbackInfo cb = (CallbackInfo) arg;
         if (cb == null) {
