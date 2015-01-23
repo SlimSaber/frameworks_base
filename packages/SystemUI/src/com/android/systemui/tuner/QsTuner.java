@@ -300,6 +300,7 @@ public class QsTuner extends PreferenceFragment implements Callback {
             else if (mSpec.equals("location")) return R.drawable.ic_signal_location_enable;
             else if (mSpec.equals("cast")) return R.drawable.ic_qs_cast_on;
             else if (mSpec.equals("hotspot")) return R.drawable.ic_hotspot_enable;
+            else if (mSpec.equals("adb_network")) return R.drawable.ic_qs_network_adb_on;
             return R.drawable.android;
         }
 
