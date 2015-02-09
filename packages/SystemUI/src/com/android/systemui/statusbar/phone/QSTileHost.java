@@ -46,6 +46,7 @@ import com.android.systemui.qs.tiles.IntentTile;
 import com.android.systemui.qs.tiles.LocationTile;
 import com.android.systemui.qs.tiles.NfcTile;
 import com.android.systemui.qs.tiles.RotationLockTile;
+import com.android.systemui.qs.tiles.ScreenOffTile;
 import com.android.systemui.qs.tiles.ScreenTimeoutTile;
 import com.android.systemui.qs.tiles.SyncTile;
 import com.android.systemui.qs.tiles.UsbTetherTile;
@@ -303,6 +304,7 @@ public class QSTileHost implements QSTile.Host, Tunable {
         else if (tileSpec.equals("sync")) return new SyncTile(this);
         else if (tileSpec.equals("usb_tether")) return new UsbTetherTile(this);
         else if (tileSpec.equals("screen_timeout")) return new ScreenTimeoutTile(this);
+        else if (tileSpec.equals("screen_off")) return new ScreenOffTile(this);
         else if (tileSpec.startsWith(IntentTile.PREFIX)) return IntentTile.create(this,tileSpec);
         else throw new IllegalArgumentException("Bad tile spec: " + tileSpec);
     }
@@ -378,6 +380,7 @@ public class QSTileHost implements QSTile.Host, Tunable {
         else if (spec.equals("sync")) return R.string.quick_settings_sync_label;
         else if (spec.equals("usb_tether")) return R.string.quick_settings_usb_tether_label;
         else if (spec.equals("screen_timeout")) return R.string.quick_settings_screen_timeout_detail_title;
+        else if (spec.equals("screen_off")) return R.string.quick_settings_screen_off;
         return 0;
     }
 }
