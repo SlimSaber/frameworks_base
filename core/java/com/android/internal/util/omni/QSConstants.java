@@ -42,6 +42,7 @@ public class QSConstants {
     public static final String TILE_DND = "dnd";
     public static final String TILE_SCREEN_OFF = "screen_off";
     public static final String TILE_SCREENSHOT = "screenshot";
+    public static final String TILE_REBOOT = "reboot";
 
     protected static final ArrayList<String> TILES_DEFAULT = new ArrayList<String>();
 
@@ -85,6 +86,7 @@ public class QSConstants {
         STATIC_TILES_AVAILABLE.add(TILE_SYNC);
         STATIC_TILES_AVAILABLE.add(TILE_SCREEN_OFF);
         STATIC_TILES_AVAILABLE.add(TILE_SCREENSHOT);
+        STATIC_TILES_AVAILABLE.add(TILE_REBOOT);
 
         TILES_AVAILABLE.addAll(STATIC_TILES_AVAILABLE);
     }
