@@ -200,7 +200,7 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
                 }
             } else {
                 // It's been unparcelled, so we need to walk the map
-                for (int i=mMap.size()-1; i>=0; i--) {
+                for (int i=mMap.size()-1; i>=0 && !fdFound; i--) {
                     Object obj = mMap.valueAt(i);
                     if (obj instanceof Parcelable) {
                         if ((((Parcelable)obj).describeContents()
