@@ -142,4 +142,8 @@
     <!-- Smart PullDown Warning -->
     <string name="smart_pulldown_disabled">Smart pulldown is disabled</string>
 
+    <!-- Battery Saver Dimss -->
+    <string name="battery_saver_dismiss_title">Dismiss</string>
+    <string name="battery_saver_notification_action_text_short">Turn off</string>
+
 </resources>
