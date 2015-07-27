@@ -3669,26 +3669,11 @@ public final class PowerManagerService extends SystemService
             final long ident = Binder.clearCallingIdentity();
             try {
                 dumpInternal(pw);
+
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }
         }
-
-        @Override
-        public String getSeenWakeLocks(){
-            StringBuffer buffer = new StringBuffer();
-            Iterator<String> nextWakeLock = mSeenWakeLocks.iterator();
-            while (nextWakeLock.hasNext()){
-                String wakeLockTag = nextWakeLock.next();
-                buffer.append(wakeLockTag + "|");
-            }
-            if(buffer.length()>0){
-                buffer.deleteCharAt(buffer.length() - 1);
-            }
-            return buffer.toString();
-        }
-
-    }
 
         /* updates the blocked uids, so if a wake lock is acquired for it
          * can be released.
@@ -3723,12 +3708,28 @@ public final class PowerManagerService extends SystemService
                             }
                         }
                     }
-               } else {
-					mBlockedUids.remove(new Integer(uid));
+                }
+                else {
+                    mBlockedUids.remove(new Integer(uid));
+                }
             }
         }
+
+        @Override
+        public String getSeenWakeLocks(){
+            StringBuffer buffer = new StringBuffer();
+            Iterator<String> nextWakeLock = mSeenWakeLocks.iterator();
+            while (nextWakeLock.hasNext()){
+                String wakeLockTag = nextWakeLock.next();
+                buffer.append(wakeLockTag + "|");
+            }
+            if(buffer.length()>0){
+                buffer.deleteCharAt(buffer.length() - 1);
+            }
+            return buffer.toString();
+        }
     }
-    
+
     private void setBlockedWakeLocks(String wakeLockTagsString) {
         mBlockedWakeLocks = new HashSet<String>();
 
