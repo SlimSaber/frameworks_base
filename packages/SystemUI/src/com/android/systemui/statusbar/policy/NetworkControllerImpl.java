@@ -1019,6 +1019,7 @@ public class NetworkControllerImpl extends BroadcastReceiver
         private int mDataState = TelephonyManager.DATA_DISCONNECTED;
         private ServiceState mServiceState;
         private SignalStrength mSignalStrength;
+        private boolean mShowRsrpSignalLevelforLTE = false;
         private MobileIconGroup mDefaultIcons;
         private Config mConfig;
 
@@ -1039,6 +1040,8 @@ public class NetworkControllerImpl extends BroadcastReceiver
             mNetworkNameSeparator = getStringIfExists(R.string.status_bar_network_name_separator);
             mNetworkNameDefault = getStringIfExists(
                     com.android.internal.R.string.lockscreen_carrier_default);
+            mShowRsrpSignalLevelforLTE = mContext.getResources().getBoolean(
+                    R.bool.config_showRsrpSignalLevelforLTE);
 
             mapIconSets();
 
@@ -1321,6 +1324,15 @@ public class NetworkControllerImpl extends BroadcastReceiver
                     mCurrentState.level = mSignalStrength.getCdmaLevel();
                 } else {
                     mCurrentState.level = mSignalStrength.getLevel();
+                    if (mShowRsrpSignalLevelforLTE && mServiceState.getDataNetworkType() ==
+                            TelephonyManager.NETWORK_TYPE_LTE) {
+                        int level = mSignalStrength.getAlternateLteLevel();
+                        if (level != -1) {
+                            mCurrentState.level = level;
+                            if (DEBUG)
+                                Log.d(TAG, "update signal strength level = " + level);
+                        }
+                    }
                 }
             }
             if (mNetworkToIconLookup.indexOfKey(mDataNetType) >= 0) {
