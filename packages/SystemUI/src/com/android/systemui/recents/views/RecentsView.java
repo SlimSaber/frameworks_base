@@ -330,7 +330,8 @@ public class RecentsView extends FrameLayout implements TaskStackView.TaskStackV
                 Settings.System.SHOW_CLEAR_ALL_RECENTS, 1) == 1;
 
         Rect taskStackBounds = new Rect();
-        mConfig.getTaskStackBounds(width, height, mConfig.systemInsets.top,
+        mConfig.getTaskStackBounds(width, hei
+ght, mConfig.systemInsets.top,
                 mConfig.systemInsets.right, taskStackBounds);
 
         if (mClearRecents != null) {
