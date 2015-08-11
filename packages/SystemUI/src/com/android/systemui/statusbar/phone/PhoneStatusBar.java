@@ -136,6 +136,7 @@ import com.android.internal.util.slim.ActionConfig;
 import com.android.internal.util.slim.ActionConstants;
 import com.android.internal.util.slim.ActionHelper;
 import com.android.internal.util.slim.DeviceUtils;
+import com.android.internal.util.slim.WeatherControllerImpl;
 
 import com.android.systemui.BatteryMeterView;
 import com.android.systemui.BatteryMeterView.BatteryMeterMode;
@@ -188,7 +189,6 @@ import com.android.systemui.statusbar.policy.SecurityControllerImpl;
 import com.android.systemui.statusbar.policy.SuControllerImpl;
 import com.android.systemui.statusbar.policy.UserInfoController;
 import com.android.systemui.statusbar.policy.UserSwitcherController;
-import com.android.systemui.statusbar.policy.WeatherControllerImpl;
 import com.android.systemui.statusbar.policy.ZenModeController;
 import com.android.systemui.statusbar.stack.NotificationStackScrollLayout;
 import com.android.systemui.statusbar.stack.NotificationStackScrollLayout.OnChildLocationsChangedListener;

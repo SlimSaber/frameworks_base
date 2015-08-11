@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The CyanogenMod Project
+ * Copyright (C) 2015 SlimRoms
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.policy;
+
+package com.android.internal.util.slim;
+
+import android.graphics.drawable.Drawable;
 
 public interface WeatherController {
     void addCallback(Callback callback);
@@ -28,5 +31,7 @@ public interface WeatherController {
         public String temp = null;
         public String city = null;
         public String condition = null;
+        public int conditionCode = 0;
+        public Drawable conditionDrawable = null;
     }
 }
