@@ -27,10 +27,12 @@ import android.app.StatusBarManager;
 import android.app.admin.DevicePolicyManager;
 import android.app.trust.TrustManager;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.media.AudioManager;
 import android.media.SoundPool;
@@ -139,6 +141,9 @@ public class KeyguardViewMediator extends SystemUI {
     private static final String KEYGUARD_SERVICE_EXTRA_ACTIVE = "active";
     private static final String DISMISS_KEYGUARD_SECURELY_ACTION =
         "com.android.keyguard.action.DISMISS_KEYGUARD_SECURELY";
+
+    private static final String SETTINGS_PACKAGE = "com.android.settings";
+    private static final String CRYPT_KEEPER_ACTIVITY = SETTINGS_PACKAGE + ".CryptKeeper";
 
     // used for handler messages
     private static final int SHOW = 2;
@@ -321,6 +326,8 @@ public class KeyguardViewMediator extends SystemUI {
     private KeyguardDisplayManager mKeyguardDisplayManager;
 
     private final ArrayList<IKeyguardStateCallback> mKeyguardStateCallbacks = new ArrayList<>();
+
+    private int mCyrptKeeperEnabledState = -1;
 
     KeyguardUpdateMonitorCallback mUpdateCallback = new KeyguardUpdateMonitorCallback() {
 
@@ -765,6 +772,16 @@ public class KeyguardViewMediator extends SystemUI {
         }
     }
 
+    private boolean isCryptKeeperEnabled() {
+        if (mCyrptKeeperEnabledState == -1) {
+            PackageManager pm = mContext.getPackageManager();
+            mCyrptKeeperEnabledState = pm.getComponentEnabledSetting(
+                    new ComponentName(SETTINGS_PACKAGE, CRYPT_KEEPER_ACTIVITY));
+        }
+
+        return mCyrptKeeperEnabledState != PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
+    }
+
     public boolean isKeyguardBound() {
         return mKeyguardBound;
     }
@@ -1020,6 +1037,14 @@ public class KeyguardViewMediator extends SystemUI {
         // if the keyguard is already showing, don't bother
         if (mStatusBarKeyguardViewManager.isShowing()) {
             if (DEBUG) Log.d(TAG, "doKeyguard: not showing because it is already showing");
+            resetStateLocked();
+            return;
+        }
+
+        // Ugly hack to ensure keyguard is not shown on top of the CryptKeeper which prevents
+        // a user from being able to decrypt their device.
+        if (isCryptKeeperEnabled()) {
+            if (DEBUG) Log.d(TAG, "doKeyguard: not showing because CryptKeeper is enabled");
             resetStateLocked();
             return;
         }
