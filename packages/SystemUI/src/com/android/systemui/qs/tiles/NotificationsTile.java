@@ -30,6 +30,7 @@
 package com.android.systemui.qs.tiles;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -50,6 +51,10 @@ import com.android.systemui.volume.ZenModePanel;
 
 /** Quick settings tile: Notifications **/
 public class NotificationsTile extends QSTile<NotificationsTile.NotificationsState> {
+
+    private static final Intent ZENMODE_SETTINGS = new Intent().setComponent(new ComponentName(
+            "com.android.settings", "com.android.settings.Settings$ZenModeSettingsActivity"));
+
     private final ZenModeController mZenController;
     private final AudioManager mAudioManager;
     private final Vibrator mVibrator;
@@ -75,11 +80,6 @@ public class NotificationsTile extends QSTile<NotificationsTile.NotificationsSta
         mZenController = host.getZenModeController();
         mAudioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
         mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
-    }
-
-    @Override
-    public DetailAdapter getDetailAdapter() {
-        return mDetailAdapter;
     }
 
     @Override
@@ -124,7 +124,7 @@ public class NotificationsTile extends QSTile<NotificationsTile.NotificationsSta
 
     @Override
     protected void handleLongClick() {
-        showDetail(true);
+        mHost.startSettingsActivity(ZENMODE_SETTINGS);
     }
 
     @Override
@@ -185,65 +185,6 @@ public class NotificationsTile extends QSTile<NotificationsTile.NotificationsSta
             if (AudioManager.RINGER_MODE_CHANGED_ACTION.equals(intent.getAction())) {
                 refreshState();
             }
-        }
-    };
-
-    private final DetailAdapter mDetailAdapter = new DetailAdapter() {
-
-        @Override
-        public int getTitle() {
-            return R.string.quick_settings_notifications_label;
-        }
-
-        @Override
-        public Boolean getToggleState() {
-            return null;
-        }
-
-        public void setToggleState(boolean state) {
-            // noop
-        }
-
-        public Intent getSettingsIntent() {
-            return ZenModePanel.ZEN_SETTINGS;
-        }
-
-        @Override
-        public View createDetailView(Context context, View convertView, ViewGroup parent) {
-            if (convertView != null) return convertView;
-            final VolumeComponent volumeComponent = mHost.getVolumeComponent();
-            final VolumePanel vp = new VolumePanel(mContext, parent, mZenController);
-            final View v = vp.getContentView();
-            v.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
-                @Override
-                public void onViewDetachedFromWindow(View v) {
-                    volumeComponent.setVolumePanel(null);
-                }
-
-                @Override
-                public void onViewAttachedToWindow(View v) {
-                    vp.updateStates();
-                    vp.onConfigurationChanged(null);
-                    volumeComponent.setVolumePanel(vp);
-                }
-            });
-            vp.setZenModePanelCallback(new ZenModePanel.Callback() {
-                @Override
-                public void onMoreSettings() {
-                    mHost.startSettingsActivity(ZenModePanel.ZEN_SETTINGS);
-                }
-
-                @Override
-                public void onInteraction() {
-                    // noop
-                }
-
-                @Override
-                public void onExpanded(boolean expanded) {
-                }
-            });
-            vp.postVolumeChanged(AudioManager.STREAM_RING, AudioManager.FLAG_SHOW_UI);
-            return v;
         }
     };
 }
