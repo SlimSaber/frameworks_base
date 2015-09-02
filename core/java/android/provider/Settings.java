@@ -4424,6 +4424,12 @@ public final class Settings {
          * @hide
          */
         public static final String HEADSET_CONNECT_PLAYER = "headset_connect_player";
+
+        /**
+         * Whether or not to expand volume panel by default
+         * @hide
+         */
+        public static final String VOLUME_PANEL_EXPANDED = "volume_panel_expanded";
     }
 
     /**
