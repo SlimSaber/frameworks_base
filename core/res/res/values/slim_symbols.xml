@@ -193,4 +193,7 @@
 
   <java-symbol type="array" name="config_externalCMServices" />
 
+  <!-- Config to disable showing ringtones from removable storage -->
+  <java-symbol type="bool" name="config_excludeRingtonesFromRemovableStorage" />
+
 </resources>
