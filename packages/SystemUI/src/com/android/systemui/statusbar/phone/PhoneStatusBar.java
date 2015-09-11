@@ -1704,8 +1704,12 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     }
 
     @Override
-    public void scheduleHeadsUpOpen() {
-        mHandler.sendEmptyMessage(MSG_SHOW_HEADS_UP);
+    public void scheduleHeadsUpOpen(boolean immediate) {
+        if (immediate) {
+            setHeadsUpVisibility(true);
+        } else {
+            mHandler.sendEmptyMessage(MSG_SHOW_HEADS_UP);
+        }
     }
 
     @Override
