@@ -60,6 +60,8 @@ public class VolumeUI extends SystemUI {
     private VolumePanel mPanel;
     private int mDismissDelay;
 
+    private ZenModeControllerImpl mZenModeController;
+
     @Override
     public void start() {
         mEnabled = mContext.getResources().getBoolean(R.bool.enable_volume_ui);
@@ -104,30 +106,35 @@ public class VolumeUI extends SystemUI {
     }
 
     private void initPanel() {
+        if (mZenModeController == null) {
+            mZenModeController = new ZenModeControllerImpl(mContext, mHandler);
+        }
         mDismissDelay = mContext.getResources().getInteger(R.integer.volume_panel_dismiss_delay);
-        mPanel = new VolumePanel(mContext, new ZenModeControllerImpl(mContext, mHandler));
-        mPanel.setCallback(new VolumePanel.Callback() {
-            @Override
-            public void onZenSettings() {
-                mHandler.removeCallbacks(mStartZenSettings);
-                mHandler.post(mStartZenSettings);
-            }
-
-            @Override
-            public void onInteraction() {
-                final KeyguardViewMediator kvm = getComponent(KeyguardViewMediator.class);
-                if (kvm != null) {
-                    kvm.userActivity();
+        if (mPanel == null) {
+            mPanel = new VolumePanel(mContext, mZenModeController);
+            mPanel.setCallback(new VolumePanel.Callback() {
+                @Override
+                public void onZenSettings() {
+                    mHandler.removeCallbacks(mStartZenSettings);
+                    mHandler.post(mStartZenSettings);
                 }
-            }
 
-            @Override
-            public void onVisible(boolean visible) {
-                if (mAudioManager != null && mVolumeController != null) {
-                    mAudioManager.notifyVolumeControllerVisible(mVolumeController, visible);
+                @Override
+                public void onInteraction() {
+                    final KeyguardViewMediator kvm = getComponent(KeyguardViewMediator.class);
+                    if (kvm != null) {
+                        kvm.userActivity();
+                    }
                 }
-            }
-        });
+
+                @Override
+                public void onVisible(boolean visible) {
+                    if (mAudioManager != null && mVolumeController != null) {
+                        mAudioManager.notifyVolumeControllerVisible(mVolumeController, visible);
+                    }
+                }
+            });
+        }
         mDialogPanel = mPanel;
     }
 
@@ -185,7 +192,7 @@ public class VolumeUI extends SystemUI {
 
         @Override
         public ZenModeController getZenController() {
-            return mDialogPanel.getZenController();
+            return mZenModeController;
         }
 
         @Override
