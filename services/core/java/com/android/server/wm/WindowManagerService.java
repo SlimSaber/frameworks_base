@@ -3805,7 +3805,7 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     public int getOrientationLocked() {
-        if (mDisplayFrozen) {
+        if (mDisplayFrozen || mAppsFreezingScreen > 0) {
             if (mLastWindowForcedOrientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
                 if (DEBUG_ORIENTATION) Slog.v(TAG, "Display is frozen, return "
                         + mLastWindowForcedOrientation);
@@ -3830,8 +3830,8 @@ public class WindowManagerService extends IWindowManager.Stub
                     continue;
                 }
                 int req = win.mAttrs.screenOrientation;
-                if((req == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) ||
-                        (req == ActivityInfo.SCREEN_ORIENTATION_BEHIND)){
+                if ((req == ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) ||
+                        (req == ActivityInfo.SCREEN_ORIENTATION_BEHIND)) {
                     continue;
                 }
 
@@ -3861,7 +3861,7 @@ public class WindowManagerService extends IWindowManager.Stub
                 }
                 if (DEBUG_ORIENTATION) Slog.v(TAG,
                         "No one is requesting an orientation when the screen is locked");
-                return mLastKeyguardForcedOrientation;
+                return mLastWindowForcedOrientation = mLastKeyguardForcedOrientation;
             }
         }
 
