@@ -375,6 +375,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private int mShowCarrierLabel;
     private int mCarrierLabelColor;
     private int mCarrierLabelColorDefault;
+    private boolean mEnableTabletNavigation;
 
     /**
      * {@link android.provider.Settings.System#SCREEN_AUTO_BRIGHTNESS_ADJ} uses the range [-1, 1].
@@ -503,6 +504,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
                     Settings.System.STATUS_BAR_CARRIER_COLOR),
                     false, this, UserHandle.USER_ALL);
+            mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.ENABLE_TABLET_NAVIGATION),
+                    false, this, UserHandle.USER_ALL);
 
             update();
         }
@@ -516,6 +520,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             int showNavBar = Settings.System.getIntForUser(
                     mContext.getContentResolver(), Settings.System.NAVIGATION_BAR_SHOW,
                     -1, mCurrentUserId);
+
             if (showNavBar != -1){
                 boolean showNavBarBool = showNavBar == 1;
                 if (showNavBarBool !=  mShowNavBar){
@@ -537,6 +542,28 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             mCarrierLabelColor = Settings.System.getIntForUser(
                     mContext.getContentResolver(), Settings.System.STATUS_BAR_CARRIER_COLOR,
                     mCarrierLabelColorDefault, mCurrentUserId);
+
+            int tabletNavigation = Settings.System.getIntForUser(
+                    mContext.getContentResolver(), Settings.System.ENABLE_TABLET_NAVIGATION, -1, mCurrentUserId);
+            if (tabletNavigation != -1 && mShowNavBar) {
+                boolean tabletNavigationBool = tabletNavigation == 1;
+                if (tabletNavigationBool != mEnableTabletNavigation) {
+                    if (mNavigationBarView != null){
+                        mWindowManager.removeViewImmediate(mNavigationBarView);
+                        mNavigationBarView = null;
+                    }
+                    mEnableTabletNavigation = tabletNavigationBool;
+                    // removing view and immediately adding it afterward is breaking
+                    // WindowManager so add a small delay before adding
+                    mHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateNavigationBar();
+                        }
+                    }, 500);
+                }
+            }
+
             if (mStatusBarWindow != null) {
                 mStatusBarWindow.setDoubleTabSleep(mDoubleTabSleep);
             }
@@ -764,6 +791,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 com.android.internal.R.integer.config_backKillTimeout);
         mCarrierLabelColorDefault = mContext.getResources().getColor(R.color.status_bar_clock_color);
 
+        mEnableTabletNavigation = Settings.System.getIntForUser(
+                mContext.getContentResolver(), Settings.System.ENABLE_TABLET_NAVIGATION, -1, mCurrentUserId) == 1;
+
         super.start(); // calls createAndAddWindows()
 
         mMediaSessionManager
@@ -871,8 +901,13 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             mShowNavBar = mWindowManagerService.hasNavigationBar();
             if (DEBUG) Log.v(TAG, "hasNavigationBar=" + mShowNavBar);
             if (mShowNavBar) {
-                mNavigationBarView =
-                    (NavigationBarView) View.inflate(context, R.layout.navigation_bar, null);
+                if (mEnableTabletNavigation) {
+                    mNavigationBarView =
+                        (NavigationBarView) View.inflate(context, R.layout.navigation_bar_tablet, null);
+                } else {
+                    mNavigationBarView =
+                        (NavigationBarView) View.inflate(context, R.layout.navigation_bar, null);
+                }
 
                 mNavigationBarView.setDisabledFlags(mDisabled1);
                 mNavigationBarView.setBar(this);
@@ -4708,8 +4743,13 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         if (mShowNavBar) {
             if (mNavigationBarView == null) {
-                mNavigationBarView =
-                    (NavigationBarView) View.inflate(mContext, R.layout.navigation_bar, null);
+                if (mEnableTabletNavigation) {
+                    mNavigationBarView =
+                        (NavigationBarView) View.inflate(mContext, R.layout.navigation_bar_tablet, null);
+                } else {
+                    mNavigationBarView =
+                        (NavigationBarView) View.inflate(mContext, R.layout.navigation_bar, null);
+                }
 
                 mNavigationBarView.setDisabledFlags(mDisabled1, true);
                 mNavigationBarView.setBar(this);
