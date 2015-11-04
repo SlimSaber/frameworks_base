@@ -50,4 +50,10 @@
     <string name="screen_pinning_description_back">This keeps it in view until you unpin. Touch and hold Back to unpin.</string>
 
     <string name="status_bar_icons">Status bar icons</string>
+
+    <string name="qs_tile_edit_header_instruction">Press and hold a tile to edit</string>
+    <string name="quick_settings_edit_label">Edit Tiles</string>
+    <string name="quick_settings_cannot_delete_edit_tile">Cannot delete the Edit tile</string>
+    <string name="qs_tiles_reset_confirmation">Reset quick settings tiles to default configuration?</string>
+
 </resources>
