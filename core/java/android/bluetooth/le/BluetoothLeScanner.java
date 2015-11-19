@@ -53,7 +53,7 @@ import java.util.UUID;
 public final class BluetoothLeScanner {
 
     private static final String TAG = "BluetoothLeScanner";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final boolean VDBG = false;
 
     private final IBluetoothManager mBluetoothManager;

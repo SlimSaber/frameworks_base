@@ -33,7 +33,7 @@ import java.util.Set;
 public class WifiPasspointCredential implements Parcelable {
 
     private final static String TAG = "PasspointCredential";
-    private final static boolean DBG = true;
+    private final static boolean DBG = false;
 
     /** Wi-Fi nodes**/
     private String mWifiSpFqdn;

@@ -43,7 +43,7 @@ public class WifiPasspointManager {
 
     private static final String TAG = "PasspointManager";
 
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
 
     /* Passpoint states values */
 

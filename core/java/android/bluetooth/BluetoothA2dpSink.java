@@ -39,7 +39,7 @@ import java.util.List;
  */
 public final class BluetoothA2dpSink implements BluetoothProfile {
     private static final String TAG = "BluetoothA2dpSink";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final boolean VDBG = false;
 
     /**

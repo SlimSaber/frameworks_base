@@ -48,7 +48,7 @@ public abstract class NetworkAgent extends Handler {
 
     private volatile AsyncChannel mAsyncChannel;
     private final String LOG_TAG;
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final boolean VDBG = false;
     private final Context mContext;
     private final ArrayList<Message>mPreConnectedQueue = new ArrayList<Message>();

@@ -36,7 +36,7 @@ import android.telephony.Rlog;
 public class ServiceState implements Parcelable {
 
     static final String LOG_TAG = "PHONE";
-    static final boolean DBG = true;
+    static final boolean DBG = false;
 
     /**
      * Normal operation condition, the phone is registered
