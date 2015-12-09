@@ -46,6 +46,8 @@ import com.android.systemui.statusbar.phone.SystemUIDialog;
 import com.android.systemui.tuner.QsTuner;
 import com.viewpagerindicator.CirclePageIndicator;
 
+import com.android.internal.util.omni.QSUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1344,26 +1346,25 @@ public class QSDragPanel extends QSPanel implements View.OnDragListener, View.On
                 numBroadcast++;
             }
         }
-        String[] defaults =
-                getContext().getString(R.string.quick_settings_tiles_default).split(",");
-        int availableSize = defaults.length + 1 - (tiles.size() - numBroadcast);
+        List<String> defaults = QSUtils.getAvailableTiles(getContext());
+        int availableSize = defaults.size() + 1 - (tiles.size() - numBroadcast);
         if (availableSize < 1) {
             availableSize = 1;
         }
         final String[] available = new String[availableSize];
         final String[] availableTiles = new String[availableSize];
         int index = 0;
-        for (int i = 0; i < defaults.length; i++) {
-            if (tiles.contains(defaults[i])) {
+        for (int i = 0; i < defaults.size(); i++) {
+            if (tiles.contains(defaults.get(i))) {
                 continue;
             }
-            int resource = mHost.getLabelResource(defaults[i]);
+            int resource = mHost.getLabelResource(defaults.get(i));
             if (resource != 0) {
-                availableTiles[index] = defaults[i];
+                availableTiles[index] = defaults.get(i);
                 available[index++] = getContext().getString(resource);
             } else {
-                availableTiles[index] = defaults[i];
-                available[index++] = defaults[i];
+                availableTiles[index] = defaults.get(i);
+                available[index++] = defaults.get(i);
             }
         }
         available[index++] = getContext().getString(R.string.broadcast_tile);
