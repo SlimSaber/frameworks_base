@@ -339,8 +339,8 @@ public class QSTileHost implements QSTile.Host, Tunable {
     @Override
     public void resetTiles() {
         setEditing(false);
-        CMSettings.Secure.putStringForUser(getContext().getContentResolver(),
-                CMSettings.Secure.QS_TILES, "default", ActivityManager.getCurrentUser());
+        Settings.Secure.putStringForUser(getContext().getContentResolver(),
+                QSTileHost.TILES_SETTING, "default", ActivityManager.getCurrentUser());
     }
 
     public static int getLabelResource(String spec) {
