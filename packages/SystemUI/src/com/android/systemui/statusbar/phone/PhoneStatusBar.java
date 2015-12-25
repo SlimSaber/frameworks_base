@@ -4474,7 +4474,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             pm.wakeUp(SystemClock.uptimeMillis(), "com.android.systemui:CAMERA_GESTURE");
             mStatusBarKeyguardViewManager.notifyDeviceWakeUpRequested();
         }
-        vibrateForCameraGesture();
+        final boolean vbrateForGesture = Settings.System.getIntForUser(
+                mContext.getContentResolver(), Settings.System.CAMERA_GESTURE_VIBRATE, 1, mCurrentUserId) == 1;
+        if(vbrateForGesture) {
+            vibrateForCameraGesture();
+        }
         if (!mStatusBarKeyguardViewManager.isShowing()) {
             startActivity(KeyguardBottomAreaView.INSECURE_CAMERA_INTENT,
                     true /* dismissShade */);
