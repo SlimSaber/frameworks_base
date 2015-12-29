@@ -667,6 +667,9 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                 slowChange = false;
             }
             mAppliedDimming = true;
+        } else if (mAppliedDimming) {
+            slowChange = false;
+            mAppliedDimming = false;
         }
 
         // If low power mode is enabled, cut the brightness level by half
@@ -679,6 +682,9 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                 slowChange = false;
             }
             mAppliedLowPower = true;
+        } else if (mAppliedLowPower) {
+            slowChange = false;
+            mAppliedLowPower = false;
         }
 
         mCallbacks.onBrightnessChanged(brightness);
