@@ -2042,6 +2042,7 @@
          "bugreport" = Take bug report, if available
          "silent" = silent mode
          "users" = list of users
+         "dnd" = dnd modes
          "torch" = torch
          "screenshot"
          "screenrecord"
@@ -2051,6 +2052,7 @@
         <item>reboot</item>
         <item>screenshot</item>
         <item>screenrecord</item>
+        <item>dnd</item>
     </string-array>
 
     <!-- Number of milliseconds to hold a wake lock to ensure that drawing is fully
