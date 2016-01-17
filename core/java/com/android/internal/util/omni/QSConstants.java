@@ -31,18 +31,34 @@ public class QSConstants {
     public static final String TILE_LOCATION = "location";
     public static final String TILE_CAST = "cast";
     public static final String TILE_HOTSPOT = "hotspot";
+    public static final String TILE_NOTIFICATIONS = "notifications";
+    public static final String TILE_DATA = "data";
+    public static final String TILE_ROAMING = "roaming";
+    public static final String TILE_DDS = "dds";
+    public static final String TILE_APN = "apn";
+    public static final String TILE_PROFILES = "profiles";
+    public static final String TILE_PERFORMANCE = "performance";
     public static final String TILE_ADB_NETWORK = "adb_network";
     public static final String TILE_NFC = "nfc";
     public static final String TILE_COMPASS = "compass";
+    public static final String TILE_LOCKSCREEN = "lockscreen";
+    public static final String TILE_LTE = "lte";
+    public static final String TILE_VISUALIZER = "visualizer";
     public static final String TILE_VOLUME = "volume_panel";
     public static final String TILE_SCREEN_TIMEOUT = "screen_timeout";
+    public static final String TILE_LIVE_DISPLAY = "live_display";
     public static final String TILE_USB_TETHER = "usb_tether";
+    public static final String TILE_HEADS_UP = "heads_up";
+    public static final String TILE_AMBIENT_DISPLAY = "ambient_display";
     public static final String TILE_SYNC = "sync";
+    public static final String TILE_BATTERY_SAVER = "battery_saver";
     public static final String TILE_EDIT = "edit";
     public static final String TILE_DND = "dnd";
-    public static final String TILE_SCREEN_OFF = "screen_off";
-    public static final String TILE_SCREENSHOT = "screenshot";
-    public static final String TILE_REBOOT = "reboot";
+
+    public static final String DYNAMIC_TILE_NEXT_ALARM = "next_alarm";
+    public static final String DYNAMIC_TILE_IME_SELECTOR = "ime_selector";
+    public static final String DYNAMIC_TILE_SU = "su";
+    public static final String DYNAMIC_TILE_ADB = "adb";
 
     protected static final ArrayList<String> TILES_DEFAULT = new ArrayList<String>();
 
@@ -77,16 +93,27 @@ public class QSConstants {
         STATIC_TILES_AVAILABLE.add(TILE_HOTSPOT);
         STATIC_TILES_AVAILABLE.add(TILE_INVERSION);
         STATIC_TILES_AVAILABLE.add(TILE_DND);
+//        STATIC_TILES_AVAILABLE.add(TILE_NOTIFICATIONS);
+//        STATIC_TILES_AVAILABLE.add(TILE_DATA);
+//        STATIC_TILES_AVAILABLE.add(TILE_ROAMING);
+//        STATIC_TILES_AVAILABLE.add(TILE_DDS);
+//        STATIC_TILES_AVAILABLE.add(TILE_APN);
+//        STATIC_TILES_AVAILABLE.add(TILE_PROFILES);
+//        STATIC_TILES_AVAILABLE.add(TILE_PERFORMANCE);
         STATIC_TILES_AVAILABLE.add(TILE_ADB_NETWORK);
         STATIC_TILES_AVAILABLE.add(TILE_NFC);
         STATIC_TILES_AVAILABLE.add(TILE_COMPASS);
+//        STATIC_TILES_AVAILABLE.add(TILE_LOCKSCREEN);
+//        STATIC_TILES_AVAILABLE.add(TILE_LTE);
+//        STATIC_TILES_AVAILABLE.add(TILE_VISUALIZER);
         STATIC_TILES_AVAILABLE.add(TILE_VOLUME);
-        STATIC_TILES_AVAILABLE.add(TILE_SCREEN_TIMEOUT);
-        STATIC_TILES_AVAILABLE.add(TILE_USB_TETHER);
+//        STATIC_TILES_AVAILABLE.add(TILE_SCREEN_TIMEOUT);
+//        STATIC_TILES_AVAILABLE.add(TILE_LIVE_DISPLAY);
+//        STATIC_TILES_AVAILABLE.add(TILE_USB_TETHER);
+//        STATIC_TILES_AVAILABLE.add(TILE_HEADS_UP);
+//        STATIC_TILES_AVAILABLE.add(TILE_AMBIENT_DISPLAY);
         STATIC_TILES_AVAILABLE.add(TILE_SYNC);
-        STATIC_TILES_AVAILABLE.add(TILE_SCREEN_OFF);
-        STATIC_TILES_AVAILABLE.add(TILE_SCREENSHOT);
-        STATIC_TILES_AVAILABLE.add(TILE_REBOOT);
+//        STATIC_TILES_AVAILABLE.add(TILE_BATTERY_SAVER);
 
         TILES_AVAILABLE.addAll(STATIC_TILES_AVAILABLE);
     }
