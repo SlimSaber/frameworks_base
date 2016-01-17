@@ -336,12 +336,6 @@ public class QSTileHost implements QSTile.Host, Tunable {
                 tiles.add(tile);
             }
         }
-        // ensure edit tile is present
-        if (tiles.size() < TILES_PER_PAGE && !tiles.contains("edit")) {
-            tiles.add("edit");
-        } else if (tiles.size() > TILES_PER_PAGE && !tiles.contains("edit")) {
-            tiles.add((TILES_PER_PAGE - 1), "edit");
-        }
         return tiles;
     }
 
