@@ -3779,6 +3779,12 @@ public final class Settings {
         public static final String STATUS_BAR_WEATHER_ICON_PACK = "status_bar_weather_icon_pack";
 
         /**
+         * Show battery percentage
+         * @hide
+         */
+        public static final String STATUS_BAR_SHOW_PERCENT_SETTING = "status_bar_show_battery_percent";
+
+        /**
          * Enable to use tablet style navigation bar
          * @hide
          */
