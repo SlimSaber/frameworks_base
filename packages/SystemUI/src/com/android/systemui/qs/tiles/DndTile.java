@@ -122,7 +122,7 @@ public class DndTile extends QSTile<QSTile.BooleanState> {
 
     @Override
     protected void handleLongClick() {
-        showDetail(true);
+        mHost.startActivityDismissingKeyguard(ZEN_SETTINGS);
     }
 
     @Override
