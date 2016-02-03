@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,16 +17,21 @@
 package com.android.systemui.recents.views;
 
 import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.*;
+import android.graphics.Bitmap.Config;
 import android.util.AttributeSet;
 import android.view.accessibility.AccessibilityManager;
 import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
+
 import com.android.internal.logging.MetricsLogger;
 import com.android.systemui.R;
 import com.android.systemui.recents.Constants;
@@ -47,7 +52,6 @@ public class TaskView extends FrameLayout implements Task.TaskCallbacks,
         public void onTaskViewDismissed(TaskView tv);
         public void onTaskViewClipStateChanged(TaskView tv);
         public void onTaskViewFocusChanged(TaskView tv, boolean focused);
-
         public void onTaskResize(TaskView tv);
     }
 
@@ -75,6 +79,25 @@ public class TaskView extends FrameLayout implements Task.TaskCallbacks,
     View mActionButtonView;
     TaskViewCallbacks mCb;
 
+    // Focus animation
+    float mFocusProgress;
+    Paint mFocusPaint = new Paint();
+    int mFocusColor = 0xff009688;
+    int mFocusAlpha = 0x40;
+    int mFocusBorderAlpha;
+    static Interpolator sFocusInInterpolator = new DecelerateInterpolator(3f);
+    static Interpolator sFocusInRadiusInterpolator = new DecelerateInterpolator();
+    static Interpolator sFocusOutInterpolator = new DecelerateInterpolator();
+    ObjectAnimator mFocusAnimator;
+    static long sFocusInDurationMs = 350;
+    static long sFocusOutDurationMs = 200;
+    float mFocusInCircleRadiusProgress;
+    int mFocusInFillAlpha;
+    int mFocusInCircleAlpha;
+    int mFocusOutFillAlpha;
+    boolean mFocusAnimatorWasTriggered;
+    int mFocusBorderSize;
+
     // Optimizations
     ValueAnimator.AnimatorUpdateListener mUpdateDimListener =
             new ValueAnimator.AnimatorUpdateListener() {
@@ -83,7 +106,6 @@ public class TaskView extends FrameLayout implements Task.TaskCallbacks,
                     setTaskProgress((Float) animation.getAnimatedValue());
                 }
             };
-
 
     public TaskView(Context context) {
         this(context, null);
@@ -109,6 +131,20 @@ public class TaskView extends FrameLayout implements Task.TaskCallbacks,
             setBackground(new FakeShadowDrawable(context.getResources(), mConfig));
         }
         setOutlineProvider(mViewBounds);
+
+        mFocusAnimator = ObjectAnimator.ofFloat(this, "focusProgress", 1f);
+        mFocusAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animator) {
+                mFocusAnimatorWasTriggered = true;
+            }
+        });
+
+        mFocusColor =
+                context.getResources().getColor(R.color.recents_focus_color);
+        mFocusPaint.setColor(mFocusColor);
+        mFocusBorderSize =
+                context.getResources().getDimensionPixelSize(R.dimen.recents_border_size);
     }
 
     /** Set callback */
@@ -119,9 +155,9 @@ public class TaskView extends FrameLayout implements Task.TaskCallbacks,
     /** Resets this TaskView for reuse. */
     void reset() {
         resetViewProperties();
-        resetNoUserInteractionState();
         setClipViewInStack(false);
         setCallbacks(null);
+        disableFocusAnimations();
     }
 
     /** Gets the task */
@@ -184,7 +220,7 @@ public class TaskView extends FrameLayout implements Task.TaskCallbacks,
     }
 
     void updateViewPropertiesToTaskTransform(TaskViewTransform toTransform, int duration,
-                                             ValueAnimator.AnimatorUpdateListener updateCallback) {
+            ValueAnimator.AnimatorUpdateListener updateCallback) {
         // Apply the transform
         toTransform.applyToTaskView(this, duration, mConfig.fastOutSlowInInterpolator, false,
                 !mConfig.fakeShadows, updateCallback);
@@ -203,6 +239,7 @@ public class TaskView extends FrameLayout implements Task.TaskCallbacks,
 
     /** Resets this view's properties */
     void resetViewProperties() {
+        unsetFocusedTask();
         setDim(0);
         setLayerType(View.LAYER_TYPE_NONE, null);
         TaskViewTransform.reset(this);
@@ -234,10 +271,12 @@ public class TaskView extends FrameLayout implements Task.TaskCallbacks,
         fromTransform.alpha = 0f;
     }
 
-    /** Prepares this task view for the enter-recents animations.  This is called earlier in the
-     * first layout because the actual animation into recents may take a long time. */
+    /**
+     * Prepares this task view for the enter-recents animations. This is called earlier in the
+     * first layout because the actual animation into recents may take a long time.
+     */
     void prepareEnterRecentsAnimation(boolean isTaskViewLaunchTargetTask,
-                                             boolean occludesLaunchTarget, int offscreenY) {
+            boolean occludesLaunchTarget, int offscreenY) {
         int initialDim = getDim();
         if (mConfig.launchedHasConfigurationChanged) {
             // Just load the views as-is
@@ -298,7 +337,8 @@ public class TaskView extends FrameLayout implements Task.TaskCallbacks,
             } else {
                 // Animate the task up if it was occluding the launch target
                 if (ctx.currentTaskOccludesLaunchTarget) {
-                    setTranslationY(transform.translationY + mConfig.taskViewAffiliateGroupEnterOffsetPx);
+                    setTranslationY(transform.translationY
+                            + mConfig.taskViewAffiliateGroupEnterOffsetPx);
                     setAlpha(0f);
                     animate().alpha(1f)
                             .translationY(transform.translationY)
@@ -419,18 +459,18 @@ public class TaskView extends FrameLayout implements Task.TaskCallbacks,
                     .setInterpolator(mConfig.fastOutLinearInInterpolator)
                     .start();
         } else {
-            // Hide the dismiss button
-            mHeaderView.startLaunchTaskDismissAnimation();
             // If this is another view in the task grouping and is in front of the launch task,
             // animate it away first
             if (occludesLaunchTarget) {
-                animate().alpha(0f)
-                    .translationY(getTranslationY() + mConfig.taskViewAffiliateGroupEnterOffsetPx)
-                    .setStartDelay(0)
-                    .setUpdateListener(null)
-                    .setInterpolator(mConfig.fastOutLinearInInterpolator)
-                    .setDuration(mConfig.taskViewExitToAppDuration)
-                    .start();
+                animate()
+                        .alpha(0f)
+                        .translationY(
+                                getTranslationY() + mConfig.taskViewAffiliateGroupEnterOffsetPx)
+                        .setStartDelay(0)
+                        .setUpdateListener(null)
+                        .setInterpolator(mConfig.fastOutLinearInInterpolator)
+                        .setDuration(mConfig.taskViewExitToAppDuration)
+                        .start();
             }
         }
     }
@@ -441,43 +481,28 @@ public class TaskView extends FrameLayout implements Task.TaskCallbacks,
         setClipViewInStack(false);
 
         animate().translationX(mConfig.taskViewRemoveAnimTranslationXPx)
-            .alpha(0f)
-            .setStartDelay(delay)
-            .setUpdateListener(null)
-            .setInterpolator(mConfig.fastOutSlowInInterpolator)
-            .setDuration(mConfig.taskViewRemoveAnimDuration)
-            .withEndAction(new Runnable() {
-                @Override
-                public void run() {
-                    if (r != null) {
-                        r.run();
-                    }
+                .alpha(0f)
+                .setStartDelay(delay)
+                .setUpdateListener(null)
+                .setInterpolator(mConfig.fastOutSlowInInterpolator)
+                .setDuration(mConfig.taskViewRemoveAnimDuration)
+                .withEndAction(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (r != null) {
+                            r.run();
+                        }
 
-                    // Re-enable clipping with the stack (we will reuse this view)
-                    setClipViewInStack(true);
-                }
-            })
-            .start();
+                        // Re-enable clipping with the stack (we will reuse this view)
+                        setClipViewInStack(true);
+                    }
+                })
+                .start();
     }
 
     /** Enables/disables handling touch on this task view. */
     void setTouchEnabled(boolean enabled) {
         setOnClickListener(enabled ? this : null);
-    }
-
-    /** Animates this task view if the user does not interact with the stack after a certain time. */
-    void startNoUserInteractionAnimation() {
-        mHeaderView.startNoUserInteractionAnimation();
-    }
-
-    /** Mark this task view that the user does has not interacted with the stack after a certain time. */
-    void setNoUserInteractionState() {
-        mHeaderView.setNoUserInteractionState();
-    }
-
-    /** Resets the state tracking that the user has not interacted with the stack after a certain time. */
-    void resetNoUserInteractionState() {
-        mHeaderView.resetNoUserInteractionState();
     }
 
     /** Dismisses this task. */
@@ -510,6 +535,75 @@ public class TaskView extends FrameLayout implements Task.TaskCallbacks,
                 mCb.onTaskViewClipStateChanged(this);
             }
         }
+    }
+
+    @Override
+    public void dispatchDraw(Canvas canvas) {
+        if (mFocusAnimatorWasTriggered) {
+            canvas.save(Canvas.CLIP_SAVE_FLAG);
+            mFocusPaint.setAlpha(mFocusBorderAlpha);
+            canvas.clipRect(-mFocusBorderSize, -mFocusBorderSize,
+                    getWidth() + mFocusBorderSize, getHeight() + mFocusBorderSize,
+                    Region.Op.REPLACE);
+            canvas.drawRoundRect(-mFocusBorderSize, -mFocusBorderSize,
+                    getWidth() + mFocusBorderSize, getHeight() + mFocusBorderSize,
+                    mConfig.taskViewRoundedCornerRadiusPx,
+                    mConfig.taskViewRoundedCornerRadiusPx, mFocusPaint);
+            canvas.restore();
+        }
+
+        super.dispatchDraw(canvas);
+
+        if (mFocusAnimatorWasTriggered) {
+            if (mIsFocused) {
+                final int x = getWidth() / 2;
+                final int y = getHeight() / 2;
+                final float hypot = (float) Math.hypot(x, y);
+                final float radius = hypot * mFocusInCircleRadiusProgress;
+
+                mFocusPaint.setAlpha(mFocusInFillAlpha);
+                canvas.drawRect(0, 0, getWidth(), getHeight(), mFocusPaint);
+
+                mFocusPaint.setAlpha(mFocusInCircleAlpha);
+                canvas.drawCircle(x, y, radius, mFocusPaint);
+            } else {
+                mFocusPaint.setAlpha(mFocusOutFillAlpha);
+                canvas.drawRect(0, 0, getWidth(), getHeight(), mFocusPaint);
+            }
+        }
+    }
+
+    /** Sets the current focus animation progress. Used by the property animator. */
+    public void setFocusProgress(float progress) {
+        mFocusProgress = progress;
+
+        if (mIsFocused) {
+            final float interpolatedProgress = sFocusInInterpolator.getInterpolation(progress);
+
+            mFocusInCircleRadiusProgress =
+                    0.5f + sFocusInRadiusInterpolator.getInterpolation(progress);
+            mFocusInCircleAlpha =
+                    (int) (mFocusAlpha * interpolatedProgress);
+            mFocusInFillAlpha =
+                    Math.min((mFocusAlpha / 4) +
+                            (int) ((mFocusAlpha / 2) * interpolatedProgress), 255);
+            mFocusBorderAlpha =
+                    Math.min(mFocusAlpha + (int) (mFocusAlpha * 3f * interpolatedProgress), 255);
+        } else {
+            final float interpolatedProgress = sFocusOutInterpolator.getInterpolation(progress);
+
+            mFocusOutFillAlpha =
+                    (int) (mFocusAlpha * (1 - interpolatedProgress));
+            mFocusBorderAlpha =
+                    Math.min((int) (mFocusAlpha * 4f * (1 - interpolatedProgress)), 255);
+        }
+
+        invalidate();
+    }
+
+    /** Returns the current focus animation progress. */
+    public float getFocusProgress() {
+        return mFocusProgress;
     }
 
     /** Sets the current task progress. */
@@ -583,12 +677,13 @@ public class TaskView extends FrameLayout implements Task.TaskCallbacks,
      * if the view is not currently visible, or we are in touch state (where we still want to keep
      * track of focus).
      */
-    public void setFocusedTask(boolean animateFocusedState) {
-        mIsFocused = true;
-        if (mFocusAnimationsEnabled) {
-            // Focus the header bar
-            mHeaderView.onTaskViewFocusChanged(true, animateFocusedState);
+    public void setFocusedTask() {
+        if (mIsFocused) {
+            return;
         }
+        mIsFocused = true;
+
+        performFocusAnimation();
         // Update the thumbnail alpha with the focus
         mThumbnailView.onFocusChanged(true);
         // Call the callback
@@ -604,14 +699,32 @@ public class TaskView extends FrameLayout implements Task.TaskCallbacks,
         invalidate();
     }
 
+    /** Performs the focus animation for alt-tab traversal. */
+    private void performFocusAnimation() {
+        if (mFocusAnimationsEnabled) {
+            // Focus the header bar
+            mHeaderView.onTaskViewFocusChanged(true);
+
+            mFocusAnimator.setDuration(sFocusInDurationMs);
+            mFocusAnimator.start();
+        }
+    }
+
     /**
      * Unsets the focused task explicitly.
      */
     void unsetFocusedTask() {
+        if (!mIsFocused) {
+            return;
+        }
+
         mIsFocused = false;
         if (mFocusAnimationsEnabled) {
             // Un-focus the header bar
-            mHeaderView.onTaskViewFocusChanged(false, true);
+            mHeaderView.onTaskViewFocusChanged(false);
+
+            mFocusAnimator.setDuration(sFocusOutDurationMs);
+            mFocusAnimator.start();
         }
 
         // Update the thumbnail alpha with the focus
@@ -636,9 +749,10 @@ public class TaskView extends FrameLayout implements Task.TaskCallbacks,
 
     /**
      * Returns whether we have explicitly been focused.
+     * This only determines whether or not focus is being drawn.
      */
     public boolean isFocusedTask() {
-        return mIsFocused || isFocused();
+        return mIsFocused;
     }
 
     /** Enables all focus animations. */
@@ -647,8 +761,15 @@ public class TaskView extends FrameLayout implements Task.TaskCallbacks,
         mFocusAnimationsEnabled = true;
         if (mIsFocused && !wasFocusAnimationsEnabled) {
             // Re-notify the header if we were focused and animations were not previously enabled
-            mHeaderView.onTaskViewFocusChanged(true, true);
+            performFocusAnimation();
         }
+    }
+
+    /** Disables focus animations and resets focus state. */
+    void disableFocusAnimations() {
+        mFocusAnimationsEnabled = false;
+        mIsFocused = false;
+        mFocusAnimatorWasTriggered = false;
     }
 
     public void disableLayersForOneFrame() {
@@ -719,7 +840,7 @@ public class TaskView extends FrameLayout implements Task.TaskCallbacks,
     /**** View.OnClickListener Implementation ****/
 
     @Override
-     public void onClick(final View v) {
+    public void onClick(final View v) {
         final TaskView tv = this;
         final boolean delayViewClick = (v != this) && (v != mActionButtonView);
         if (delayViewClick) {

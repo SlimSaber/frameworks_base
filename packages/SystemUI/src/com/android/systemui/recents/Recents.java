@@ -89,6 +89,7 @@ public class Recents extends SystemUI
     final public static String ACTION_START_ENTER_ANIMATION = "action_start_enter_animation";
     final public static String ACTION_TOGGLE_RECENTS_ACTIVITY = "action_toggle_recents_activity";
     final public static String ACTION_HIDE_RECENTS_ACTIVITY = "action_hide_recents_activity";
+    final public static String ACTION_ALT_TAB_TRAVERSAL = "action_alt_tab_traversal";
 
     final static int sMinToggleDelay = 350;
 
@@ -301,7 +302,15 @@ public class Recents extends SystemUI
         mTriggeredFromAltTab = triggeredFromAltTab;
 
         try {
-            startRecentsActivity();
+            // If Recents is the front most activity
+            ActivityManager.RunningTaskInfo topTask = mSystemServicesProxy.getTopMostTask();
+            if (topTask != null && mSystemServicesProxy.isRecentsTopMost(topTask, null)) {
+                Intent intent = createLocalBroadcastIntent(mContext, ACTION_ALT_TAB_TRAVERSAL);
+                intent.putExtra(EXTRA_TRIGGERED_FROM_ALT_TAB, triggeredFromAltTab);
+                mContext.sendBroadcastAsUser(intent, UserHandle.CURRENT);
+            } else {
+                startRecentsActivity();
+            }
         } catch (ActivityNotFoundException e) {
             Console.logRawError("Failed to launch RecentAppsIntent", e);
         }
@@ -779,7 +788,7 @@ public class Recents extends SystemUI
         RecentsTaskLoader loader = RecentsTaskLoader.getInstance();
         RecentsConfiguration.reinitialize(mContext, mSystemServicesProxy);
 
-        if (sInstanceLoadPlan == null) {
+        if (mTriggeredFromAltTab || sInstanceLoadPlan == null) {
             // Create a new load plan if onPreloadRecents() was never triggered
             sInstanceLoadPlan = loader.createLoadPlan(mContext);
         }
@@ -799,7 +808,7 @@ public class Recents extends SystemUI
             return;
         }
 
-        if (!sInstanceLoadPlan.hasTasks()) {
+        if (mTriggeredFromAltTab || !sInstanceLoadPlan.hasTasks()) {
             loader.preloadTasks(sInstanceLoadPlan, isTopTaskHome);
         }
         ArrayList<TaskStack> stacks = sInstanceLoadPlan.getAllTaskStacks();

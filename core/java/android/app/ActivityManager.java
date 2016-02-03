@@ -75,8 +75,6 @@ public class ActivityManager {
     private static String TAG = "ActivityManager";
     private static boolean localLOGV = false;
 
-    private static int gMaxRecentTasks = -1;
-
     private final Context mContext;
     private final Handler mHandler;
 
@@ -358,6 +356,15 @@ public class ActivityManager {
     private static boolean _staticGetMemoryClassInit = false;
     private static boolean _isRunningInTestHarnessInit = false;
 
+    /** @hide The maximum number of recents entries that we will maintain and show. */
+    public static final int RECENTS_MAX_TASKS = 18;
+
+    /** @hide The maximum limit on the number of recents that an app can make. */
+    public static final int RECENTS_APP_LIMIT_MAX = 6;
+
+    /** @hide The default limit on the number of recents that an app can make. */
+    public static final int RECENTS_APP_LIMIT_DEFAULT = 4;
+
     Point mAppTaskThumbnailSize;
 
     /*package*/ ActivityManager(Context context, Handler handler) {
@@ -568,10 +575,7 @@ public class ActivityManager {
      * @hide
      */
     static public int getMaxRecentTasksStatic() {
-        if (gMaxRecentTasks < 0) {
-            return gMaxRecentTasks = isLowRamDeviceStatic() ? 50 : 100;
-        }
-        return gMaxRecentTasks;
+        return RECENTS_MAX_TASKS;
     }
 
     /**
@@ -579,7 +583,7 @@ public class ActivityManager {
      * @hide
      */
     static public int getDefaultAppRecentsLimitStatic() {
-        return getMaxRecentTasksStatic() / 6;
+        return RECENTS_APP_LIMIT_DEFAULT;
     }
 
     /**
@@ -587,7 +591,7 @@ public class ActivityManager {
      * @hide
      */
     static public int getMaxAppRecentsLimitStatic() {
-        return getMaxRecentTasksStatic() / 2;
+        return RECENTS_APP_LIMIT_MAX;
     }
 
     /**

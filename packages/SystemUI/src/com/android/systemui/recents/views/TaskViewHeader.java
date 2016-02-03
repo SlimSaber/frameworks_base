@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -47,6 +47,7 @@ import android.view.ViewOutlineProvider;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import com.android.systemui.R;
 import com.android.systemui.recents.Constants;
 import com.android.systemui.recents.RecentsConfiguration;
@@ -55,12 +56,15 @@ import com.android.systemui.recents.misc.Utilities;
 import com.android.systemui.recents.model.RecentsTaskLoader;
 import com.android.systemui.recents.model.Task;
 
-
 /* The task bar view */
 public class TaskViewHeader extends FrameLayout {
 
     RecentsConfiguration mConfig;
     private SystemServicesProxy mSsp;
+
+    Task mTask;
+    boolean mIsFocused;
+    float mFocusProgress;
 
     // Header views
     ImageView mMoveTaskButton;
@@ -76,7 +80,7 @@ public class TaskViewHeader extends FrameLayout {
     Drawable mDarkDismissDrawable;
     RippleDrawable mBackground;
     GradientDrawable mBackgroundColorDrawable;
-    AnimatorSet mFocusAnimator;
+    ValueAnimator mFocusAnimator;
     String mDismissContentDescription;
 
     // Static highlight that we draw at the top of each view
@@ -129,6 +133,8 @@ public class TaskViewHeader extends FrameLayout {
             sHighlightPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.ADD));
             sHighlightPaint.setAntiAlias(true);
         }
+
+        mFocusAnimator = ObjectAnimator.ofFloat(this, "focusProgress", 1f);
     }
 
     @Override
@@ -186,14 +192,9 @@ public class TaskViewHeader extends FrameLayout {
         }
     }
 
-    /** Returns the secondary color for a primary color. */
-    int getSecondaryColor(int primaryColor, boolean useLightOverlayColor) {
-        int overlayColor = useLightOverlayColor ? Color.WHITE : Color.BLACK;
-        return Utilities.getColorWithOverlay(primaryColor, overlayColor, 0.8f);
-    }
-
     /** Binds the bar view to the task */
     public void rebindToTask(Task t) {
+        mTask = t;
         // If an activity icon is defined, then we use that as the primary icon to show in the bar,
         // otherwise, we fall back to the application icon
         if (t.activityIcon != null) {
@@ -262,48 +263,13 @@ public class TaskViewHeader extends FrameLayout {
 
     /** Unbinds the bar view from the task */
     void unbindFromTask() {
+        mBackground.jumpToCurrentState();
+
+        if (mFocusAnimator != null) {
+            mFocusAnimator.cancel();
+        }
+
         mApplicationIcon.setImageDrawable(null);
-    }
-
-    /** Animates this task bar dismiss button when launching a task. */
-    void startLaunchTaskDismissAnimation() {
-        if (mDismissButton.getVisibility() == View.VISIBLE) {
-            mDismissButton.animate().cancel();
-            mDismissButton.animate()
-                    .alpha(0f)
-                    .setStartDelay(0)
-                    .setInterpolator(mConfig.fastOutSlowInInterpolator)
-                    .setDuration(mConfig.taskViewExitToAppDuration)
-                    .start();
-        }
-    }
-
-    /** Animates this task bar if the user does not interact with the stack after a certain time. */
-    void startNoUserInteractionAnimation() {
-        if (mDismissButton.getVisibility() != View.VISIBLE) {
-            mDismissButton.setVisibility(View.VISIBLE);
-            mDismissButton.setAlpha(0f);
-            mDismissButton.animate()
-                    .alpha(1f)
-                    .setStartDelay(0)
-                    .setInterpolator(mConfig.fastOutLinearInInterpolator)
-                    .setDuration(mConfig.taskViewEnterFromAppDuration)
-                    .start();
-        }
-    }
-
-    /** Mark this task view that the user does has not interacted with the stack after a certain time. */
-    void setNoUserInteractionState() {
-        if (mDismissButton.getVisibility() != View.VISIBLE) {
-            mDismissButton.animate().cancel();
-            mDismissButton.setVisibility(View.VISIBLE);
-            mDismissButton.setAlpha(1f);
-        }
-    }
-
-    /** Resets the state tracking that the user has not interacted with the stack after a certain time. */
-    void resetNoUserInteractionState() {
-        mDismissButton.setVisibility(View.INVISIBLE);
     }
 
     @Override
@@ -336,92 +302,46 @@ public class TaskViewHeader extends FrameLayout {
         setLayerType(LAYER_TYPE_NONE, null);
     }
 
+    /** Sets the focus animation progress. Used by the property animator. */
+    public void setFocusProgress(float progress) {
+        mFocusProgress = progress;
+        final ArgbEvaluator colorEvaluator = new ArgbEvaluator();
+        int desaturatedColor = calculateDesauratedColor(mBackgroundColor);
+        int color = (Integer) colorEvaluator.evaluate(progress, mBackgroundColor,
+                mIsFocused ? desaturatedColor : mTask.colorPrimary);
+        mBackgroundColorDrawable.setColor(color);
+        mBackgroundColor = color;
+
+        TaskViewHeader.this.setTranslationZ((mIsFocused ? progress : (1 - progress)) * 1);
+    }
+
+    /** Returns the current focus animation progress. */
+    public float getFocusProgress() {
+        return mFocusProgress;
+    }
+
+    /** Returns a desaturated color value for a given color. */
+    private int calculateDesauratedColor(int saturatedColor) {
+        final float red = 0.2126f * Color.red(saturatedColor);
+        final float green = 0.7152f * Color.green(saturatedColor);
+        final float blue = 0.0722f * Color.blue(saturatedColor);
+        final int sum = (int) (red + green + blue);
+
+        return Color.argb(255, sum, sum, sum);
+    }
+
     /** Notifies the associated TaskView has been focused. */
-    void onTaskViewFocusChanged(boolean focused, boolean animateFocusedState) {
-        // If we are not animating the visible state, just return
-        if (!animateFocusedState) return;
+    void onTaskViewFocusChanged(final boolean focused) {
+        mIsFocused = focused;
 
-        boolean isRunning = false;
-        if (mFocusAnimator != null) {
-            isRunning = mFocusAnimator.isRunning();
-            Utilities.cancelAnimationWithoutCallbacks(mFocusAnimator);
-        }
-
-        if (focused) {
-            int currentColor = mBackgroundColor;
-            int secondaryColor = getSecondaryColor(mCurrentPrimaryColor, mCurrentPrimaryColorIsDark);
-            int[][] states = new int[][] {
-                    new int[] {},
-                    new int[] { android.R.attr.state_enabled },
-                    new int[] { android.R.attr.state_pressed }
-            };
-            int[] newStates = new int[]{
-                    0,
-                    android.R.attr.state_enabled,
-                    android.R.attr.state_pressed
-            };
-            int[] colors = new int[] {
-                    currentColor,
-                    secondaryColor,
-                    secondaryColor
-            };
-            mBackground.setColor(new ColorStateList(states, colors));
-            mBackground.setState(newStates);
-            // Pulse the background color
-            int lightPrimaryColor = getSecondaryColor(mCurrentPrimaryColor, mCurrentPrimaryColorIsDark);
-            ValueAnimator backgroundColor = ValueAnimator.ofObject(new ArgbEvaluator(),
-                    currentColor, lightPrimaryColor);
-            backgroundColor.addListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    mBackground.setState(new int[]{});
-                }
-            });
-            backgroundColor.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    int color = (int) animation.getAnimatedValue();
-                    mBackgroundColorDrawable.setColor(color);
-                    mBackgroundColor = color;
-                }
-            });
-            backgroundColor.setRepeatCount(ValueAnimator.INFINITE);
-            backgroundColor.setRepeatMode(ValueAnimator.REVERSE);
-            // Pulse the translation
-            ObjectAnimator translation = ObjectAnimator.ofFloat(this, "translationZ", 15f);
-            translation.setRepeatCount(ValueAnimator.INFINITE);
-            translation.setRepeatMode(ValueAnimator.REVERSE);
-
-            mFocusAnimator = new AnimatorSet();
-            mFocusAnimator.playTogether(backgroundColor, translation);
-            mFocusAnimator.setStartDelay(150);
-            mFocusAnimator.setDuration(750);
-            mFocusAnimator.start();
-        } else {
-            if (isRunning) {
-                // Restore the background color
-                int currentColor = mBackgroundColor;
-                ValueAnimator backgroundColor = ValueAnimator.ofObject(new ArgbEvaluator(),
-                        currentColor, mCurrentPrimaryColor);
-                backgroundColor.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                    @Override
-                    public void onAnimationUpdate(ValueAnimator animation) {
-                        int color = (int) animation.getAnimatedValue();
-                        mBackgroundColorDrawable.setColor(color);
-                        mBackgroundColor = color;
-                    }
-                });
-                // Restore the translation
-                ObjectAnimator translation = ObjectAnimator.ofFloat(this, "translationZ", 0f);
-
-                mFocusAnimator = new AnimatorSet();
-                mFocusAnimator.playTogether(backgroundColor, translation);
-                mFocusAnimator.setDuration(150);
-                mFocusAnimator.start();
-            } else {
-                mBackground.setState(new int[] {});
-                setTranslationZ(0f);
-            }
-        }
+        mFocusAnimator.setDuration(
+                mIsFocused ?
+                        TaskView.sFocusInDurationMs :
+                        TaskView.sFocusOutDurationMs);
+        mFocusAnimator.setInterpolator(
+                mIsFocused ?
+                        TaskView.sFocusInRadiusInterpolator :
+                        TaskView.sFocusOutInterpolator);
+        mFocusAnimator.start();
     }
 }

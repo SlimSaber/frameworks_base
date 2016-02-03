@@ -57,6 +57,8 @@ class TaskStackViewTouchHandler implements SwipeHelper.Callback {
     float mPagingTouchSlop;
     // Used to calculate when a tap is outside a task view rectangle.
     final int mWindowTouchSlop;
+    boolean mIsTouching;
+    boolean mHasBeenTouched;
 
     SwipeHelper mSwipeHelper;
     boolean mInterceptedBySwipeHelper;
@@ -149,6 +151,8 @@ class TaskStackViewTouchHandler implements SwipeHelper.Callback {
         switch (action & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN: {
                 // Save the touch down info
+                startTouching();
+                mHasBeenTouched = true;
                 mInitialMotionX = mLastMotionX = (int) ev.getX();
                 mInitialMotionY = mLastMotionY = (int) ev.getY();
                 mInitialP = mLastP = mSv.mLayoutAlgorithm.screenYToCurveProgress(mLastMotionY);
@@ -210,7 +214,9 @@ class TaskStackViewTouchHandler implements SwipeHelper.Callback {
                 break;
             }
             case MotionEvent.ACTION_CANCEL:
+                /* falls through */
             case MotionEvent.ACTION_UP: {
+                mIsTouching = false;
                 // Animate the scroll back if we've cancelled
                 mScroller.animateBoundScroll();
                 // Reset the drag state and the velocity tracker
@@ -255,6 +261,8 @@ class TaskStackViewTouchHandler implements SwipeHelper.Callback {
         switch (action & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN: {
                 // Save the touch down info
+                startTouching();
+                mHasBeenTouched = true;
                 mInitialMotionX = mLastMotionX = (int) ev.getX();
                 mInitialMotionY = mLastMotionY = (int) ev.getY();
                 mInitialP = mLastP = mSv.mLayoutAlgorithm.screenYToCurveProgress(mLastMotionY);
@@ -321,6 +329,7 @@ class TaskStackViewTouchHandler implements SwipeHelper.Callback {
                 break;
             }
             case MotionEvent.ACTION_UP: {
+                mIsTouching = false;
                 mVelocityTracker.computeCurrentVelocity(1000, mMaximumVelocity);
                 int velocity = (int) mVelocityTracker.getYVelocity(mActivePointerId);
                 if (mIsScrolling && (Math.abs(velocity) > mMinimumVelocity)) {
@@ -367,6 +376,7 @@ class TaskStackViewTouchHandler implements SwipeHelper.Callback {
                 break;
             }
             case MotionEvent.ACTION_CANCEL: {
+                mIsTouching = false;
                 if (mScroller.isScrollOutOfBounds()) {
                     // Animate the scroll back into bounds
                     mScroller.animateBoundScroll();
@@ -420,11 +430,11 @@ class TaskStackViewTouchHandler implements SwipeHelper.Callback {
                     float vScroll = ev.getAxisValue(MotionEvent.AXIS_VSCROLL);
                     if (vScroll > 0) {
                         if (mSv.ensureFocusedTask(true)) {
-                            mSv.focusNextTask(true, false);
+                            mSv.focusNextTask(true);
                         }
                     } else {
                         if (mSv.ensureFocusedTask(true)) {
-                            mSv.focusNextTask(false, false);
+                            mSv.focusNextTask(false);
                         }
                     }
                     return true;
@@ -447,6 +457,9 @@ class TaskStackViewTouchHandler implements SwipeHelper.Callback {
 
     @Override
     public void onBeginDrag(View v) {
+        startTouching();
+        mHasBeenTouched = true;
+
         TaskView tv = (TaskView) v;
         // Disable clipping with the stack while we are swiping
         tv.setClipViewInStack(false);
@@ -468,6 +481,8 @@ class TaskStackViewTouchHandler implements SwipeHelper.Callback {
 
     @Override
     public void onChildDismissed(View v) {
+        mIsTouching = false;
+
         TaskView tv = (TaskView) v;
         // Re-enable clipping with the stack (we will reuse this view)
         tv.setClipViewInStack(true);
@@ -482,6 +497,8 @@ class TaskStackViewTouchHandler implements SwipeHelper.Callback {
 
     @Override
     public void onSnapBackCompleted(View v) {
+        mIsTouching = false;
+
         TaskView tv = (TaskView) v;
         // Re-enable clipping with the stack
         tv.setClipViewInStack(true);
@@ -493,6 +510,28 @@ class TaskStackViewTouchHandler implements SwipeHelper.Callback {
 
     @Override
     public void onDragCancelled(View v) {
-        // Do nothing
+        mIsTouching = false;
+    }
+
+    private void startTouching() {
+        mIsTouching = true;
+        mSv.resetFocusedTask();
+    }
+
+    public boolean isTouching() {
+        return mIsTouching;
+    }
+
+    public void resetHasBeenTouched() {
+        mHasBeenTouched = false;
+    }
+
+    public boolean hasBeenTouched() {
+        return mHasBeenTouched;
+    }
+
+    public void reset() {
+        mIsTouching = false;
+        mHasBeenTouched = false;
     }
 }
