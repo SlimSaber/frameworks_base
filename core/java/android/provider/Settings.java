@@ -3759,12 +3759,6 @@ public final class Settings {
         public static final String RECENTS_FULL_SCREEN = "recents_full_screen";
 
         /**
-         * Show search bar in recents
-         * @hide
-         */
-        public static final String RECENTS_SHOW_SEARCH_BAR = "recents_show_search_bar";
-
-        /**
          * Whether the camera launch gesture should vibrate
          * @hide
          */
