@@ -36,7 +36,6 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.PorterDuffXfermode;
-import android.graphics.PorterDuff.Mode;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -83,8 +82,6 @@ public class TaskViewHeader extends FrameLayout {
     GradientDrawable mBackgroundColorDrawable;
     AnimatorSet mFocusAnimator;
     String mDismissContentDescription;
-    int mTaskbarIconLightColor;
-    int mTaskbarIconDarkColor;
 
     // Static highlight that we draw at the top of each view
     static Paint sHighlightPaint;
@@ -140,9 +137,6 @@ public class TaskViewHeader extends FrameLayout {
             sHighlightPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.ADD));
             sHighlightPaint.setAntiAlias(true);
         }
-
-        mTaskbarIconLightColor = res.getColor(R.color.recents_task_bar_light_dismiss_color);
-        mTaskbarIconDarkColor = res.getColor(R.color.recents_task_bar_dark_dismiss_color);
     }
 
     @Override
@@ -275,9 +269,6 @@ public class TaskViewHeader extends FrameLayout {
             }
         }
         mMoveTaskButton.setImageResource(resId);
-        mMoveTaskButton.setColorFilter(t.useLightOnPrimaryColor ?
-                mTaskbarIconLightColor :
-                mTaskbarIconDarkColor, Mode.SRC_ATOP);
     }
 
     /** Unbinds the bar view from the task */
