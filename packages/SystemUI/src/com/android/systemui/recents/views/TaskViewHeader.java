@@ -31,7 +31,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.RippleDrawable;
-import android.provider.Settings;
 import android.graphics.Outline;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
@@ -80,8 +79,6 @@ public class TaskViewHeader extends FrameLayout {
     Drawable mDarkDismissDrawable;
     Drawable mLightPinDrawable;
     Drawable mDarkPinDrawable;
-    Drawable mLightMultiwindowDrawable;
-    Drawable mDarkMultiwindowDrawable;
     RippleDrawable mBackground;
     GradientDrawable mBackgroundColorDrawable;
     AnimatorSet mFocusAnimator;
@@ -134,14 +131,6 @@ public class TaskViewHeader extends FrameLayout {
         mLightPinDrawable = res.getDrawable(R.drawable.ic_pin);
         mDarkPinDrawable = res.getDrawable(R.drawable.ic_pin_dark);
 
-        // Load the screen pinning resources
-        mLightPinDrawable = context.getDrawable(R.drawable.ic_pin);
-        mDarkPinDrawable = context.getDrawable(R.drawable.ic_pin_dark);
-
-        // Load multi-window resources
-        mLightMultiwindowDrawable = context.getDrawable(R.drawable.ic_multiwindow);
-        mDarkMultiwindowDrawable = context.getDrawable(R.drawable.ic_multiwindow_dark);
-
         // Configure the highlight paint
         if (sHighlightPaint == null) {
             sHighlightPaint = new Paint();
@@ -162,7 +151,6 @@ public class TaskViewHeader extends FrameLayout {
         mApplicationIcon = (ImageView) findViewById(R.id.application_icon);
         mActivityDescription = (TextView) findViewById(R.id.activity_description);
         mDismissButton = (ImageView) findViewById(R.id.dismiss_task);
-        mPinButton = (ImageView) findViewById(R.id.lock_to_app_fab);
         mMoveTaskButton = (ImageView) findViewById(R.id.move_task);
         mPinButton = (ImageView) findViewById(R.id.lock_to_app_fab);
 
@@ -251,8 +239,45 @@ public class TaskViewHeader extends FrameLayout {
         mDismissButton.setContentDescription(String.format(mDismissContentDescription,
                 t.contentDescription));
         mMoveTaskButton.setVisibility((mConfig.multiStackEnabled) ? View.VISIBLE : View.INVISIBLE);
-        mMoveTaskButton.setImageDrawable(t.useLightOnPrimaryColor ?
-                mLightMultiwindowDrawable : mDarkMultiwindowDrawable);
+        if (mConfig.multiStackEnabled) {
+            updateResizeTaskBarIcon(t);
+        }
+    }
+
+    /** Updates the resize task bar button. */
+    void updateResizeTaskBarIcon(Task t) {
+        Rect display = mSsp.getWindowRect();
+        Rect taskRect = mSsp.getTaskBounds(t.key.stackId);
+        int resId = R.drawable.star;
+        if (display.equals(taskRect) || taskRect.isEmpty()) {
+            resId = R.drawable.vector_drawable_place_fullscreen;
+        } else {
+            boolean top = display.top == taskRect.top;
+            boolean bottom = display.bottom == taskRect.bottom;
+            boolean left = display.left == taskRect.left;
+            boolean right = display.right == taskRect.right;
+            if (top && bottom && left) {
+                resId = R.drawable.vector_drawable_place_left;
+            } else if (top && bottom && right) {
+                resId = R.drawable.vector_drawable_place_right;
+            } else if (top && left && right) {
+                resId = R.drawable.vector_drawable_place_top;
+            } else if (bottom && left && right) {
+                resId = R.drawable.vector_drawable_place_bottom;
+            } else if (top && right) {
+                resId = R.drawable.vector_drawable_place_top_right;
+            } else if (top && left) {
+                resId = R.drawable.vector_drawable_place_top_left;
+            } else if (bottom && right) {
+                resId = R.drawable.vector_drawable_place_bottom_right;
+            } else if (bottom && left) {
+                resId = R.drawable.vector_drawable_place_bottom_left;
+            }
+        }
+        mMoveTaskButton.setImageResource(resId);
+        mMoveTaskButton.setColorFilter(t.useLightOnPrimaryColor ?
+                mTaskbarIconLightColor :
+                mTaskbarIconDarkColor, Mode.SRC_ATOP);
     }
 
     /** Unbinds the bar view from the task */
