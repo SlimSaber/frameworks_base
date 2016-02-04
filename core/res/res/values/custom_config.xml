@@ -91,4 +91,14 @@
     <string-array name="config_forceEnabledComponents" translatable="false">
     </string-array>
 
+    <!-- Wifi Service -->
+    <!-- Whether to make default hotspot security NONE-->
+    <bool name="config_wifiHotspotSecurityNone">false</bool>
+    <!-- Default wi-fi hotspot ssid -->
+    <string name="config_wifiHotSpotSsid" translatable="false"></string>
+    <!-- Default wi-fi hotspot pass -->
+    <string name="config_wifiHotSpotPass" translatable="false"></string>
+    <!-- Default wi-fi direct name -->
+    <string name="config_wifiDirectName" translatable="false"></string>
+
 </resources>
