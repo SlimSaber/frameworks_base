@@ -42,6 +42,7 @@ import com.android.internal.util.NotificationColorUtil;
 import com.android.systemui.BatteryMeterView;
 import com.android.systemui.FontSizeUtils;
 import com.android.systemui.R;
+import com.android.systemui.omni.BatteryViewManager;
 import com.android.systemui.statusbar.NotificationData;
 import com.android.systemui.statusbar.SignalClusterView;
 import com.android.systemui.statusbar.StatusBarIconView;
@@ -77,7 +78,8 @@ public class StatusBarIconController implements Tunable {
     private IconMerger mNotificationIcons;
     private View mNotificationIconArea;
     private ImageView mMoreIcon;
-    private BatteryMeterView mBatteryMeterView;
+    //private BatteryMeterView mBatteryMeterView;
+    private BatteryViewManager mBatteryViewManager;
     private TextView mClock;
 
     // Center clock
@@ -127,7 +129,8 @@ public class StatusBarIconController implements Tunable {
         mMoreIcon = (ImageView) statusBar.findViewById(R.id.moreIcon);
         mNotificationIcons.setOverflowIndicator(mMoreIcon);
         mStatusIconsKeyguard = (LinearLayout) keyguardStatusBar.findViewById(R.id.statusIcons);
-        mBatteryMeterView = (BatteryMeterView) statusBar.findViewById(R.id.battery);
+        //mBatteryMeterView = (BatteryMeterView) statusBar.findViewById(R.id.battery);
+        mBatteryViewManager = phoneStatusBar.getBatteryViewManager();
         mClock = (TextView) statusBar.findViewById(R.id.clock);
         mCenterClockLayout = (LinearLayout)statusBar.findViewById(R.id.center_clock_layout);
         mCclock = (TextView) statusBar.findViewById(R.id.center_clock);
@@ -428,8 +431,9 @@ public class StatusBarIconController implements Tunable {
         }
         mSignalCluster.setIconTint(mIconTint, mDarkIntensity);
         mMoreIcon.setImageTintList(ColorStateList.valueOf(mIconTint));
-        mBatteryMeterView.setDarkIntensity(mDarkIntensity);
-//        mClock.setTextColor(mIconTint);
+        //mBatteryMeterView.setDarkIntensity(mDarkIntensity);
+        mBatteryViewManager.setDarkIntensity(mDarkIntensity);
+        //mClock.setTextColor(mIconTint);
         applyNotificationIconsTint();
     }
 
