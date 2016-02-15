@@ -1471,7 +1471,7 @@ class GlobalActions implements DialogInterface.OnDismissListener, DialogInterfac
         }
 
         private static int getDialogTheme(Context context) {
-            return com.android.internal.R.style.Theme_Material_DayNight_Dialog_Alert;
+            return com.android.internal.R.style.Theme_Material_Light_Dialog_Alert;
         }
 
         @Override
