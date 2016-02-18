@@ -102,4 +102,8 @@
   <!-- Wifi idle time default -->
   <java-symbol type="integer" name="def_wifi_idle_ms" />
 
+  <!-- lock clock -->
+  <java-symbol type="dimen" name="lock_clock_date_font_size" />
+  <java-symbol type="dimen" name="lock_clock_time_font_size" />
+
 </resources>

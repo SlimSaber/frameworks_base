@@ -429,7 +429,8 @@ public class NotificationPanelView extends PanelView implements
                     mNotificationStackScroller.getNotGoneChildCount(),
                     getHeight(),
                     mKeyguardStatusView.getHeight(),
-                    mEmptyDragAmount);
+                    mEmptyDragAmount,
+                    mKeyguardStatusView.isTimeVisible());
             mClockPositionAlgorithm.run(mClockPositionResult);
             if (animate || mClockAnimator != null) {
                 startClockAnimation(mClockPositionResult.clockY);
@@ -2479,6 +2480,12 @@ public class NotificationPanelView extends PanelView implements
         ActivityManager am = getContext().getSystemService(ActivityManager.class);
         List<ActivityManager.RunningTaskInfo> tasks = am.getRunningTasks(1);
         return !tasks.isEmpty() && pkgName.equals(tasks.get(0).topActivity.getPackageName());
+    }
+
+    private void setQSBackgroundAlpha(int alpha) {
+        if (mQsContainer != null) {
+            mQsContainer.getBackground().setAlpha(alpha);
+        }
     }
 
 	class SettingsObserver extends ContentObserver {
