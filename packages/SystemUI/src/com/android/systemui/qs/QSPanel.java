@@ -511,7 +511,7 @@ public class QSPanel extends ViewGroup {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         final int width = MeasureSpec.getSize(widthMeasureSpec);
         mBrightnessView.measure(exactly(width), MeasureSpec.UNSPECIFIED);
-        final int brightnessHeight = mBrightnessView.getMeasuredHeight() + mBrightnessPaddingTop;
+        final int brightnessHeight = getBrightnessViewHeight() + mBrightnessPaddingTop;
         mFooter.getView().measure(exactly(width), MeasureSpec.UNSPECIFIED);
         int r = -1;
         int c = -1;
@@ -562,7 +562,7 @@ public class QSPanel extends ViewGroup {
         final int w = getWidth();
         mBrightnessView.layout(0, mBrightnessPaddingTop,
                 mBrightnessView.getMeasuredWidth(),
-                mBrightnessPaddingTop + mBrightnessView.getMeasuredHeight());
+                mBrightnessPaddingTop + getBrightnessViewHeight());
         boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
         for (TileRecord record : mRecords) {
             if (record.tileView.getVisibility() == GONE) continue;
@@ -590,9 +590,13 @@ public class QSPanel extends ViewGroup {
         }
     }
 
+    private int getBrightnessViewHeight() {
+        return mBrightnessSliderEnabled ? mBrightnessView.getMeasuredHeight() : 0;
+    }
+
     private int getRowTop(int row) {
-        if (row <= 0) return mBrightnessView.getMeasuredHeight() + mBrightnessPaddingTop;
-        return mBrightnessView.getMeasuredHeight() + mBrightnessPaddingTop
+        if (row <= 0) return getBrightnessViewHeight() + mBrightnessPaddingTop;
+        return getBrightnessViewHeight() + mBrightnessPaddingTop
                 + (mUseMainTiles ? mLargeCellHeight - mDualTileUnderlap : mCellHeight)
                 + (row - 1) * mCellHeight;
     }
