@@ -2013,6 +2013,8 @@
         <item>power</item>
         <item>reboot</item>
         <item>bugreport</item>
+        <item>screenshot</item>
+        <item>screenrecord</item>
         <item>users</item>
     </string-array>
 
