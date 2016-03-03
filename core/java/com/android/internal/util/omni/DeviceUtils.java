@@ -19,6 +19,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.hardware.SensorManager;
 import android.net.ConnectivityManager;
@@ -166,4 +167,11 @@ public class DeviceUtils {
     public static boolean isChineseLanguage() {
        return Resources.getSystem().getConfiguration().locale.getLanguage().startsWith(Locale.CHINESE.getLanguage());
     }
+
+    public static boolean isLandscapePhone(Context context) {
+        Configuration config = context.getResources().getConfiguration();
+        return config.orientation == Configuration.ORIENTATION_LANDSCAPE
+                && config.smallestScreenWidthDp < 600;
+    }
+
 }

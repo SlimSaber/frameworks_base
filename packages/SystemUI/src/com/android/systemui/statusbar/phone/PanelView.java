@@ -962,14 +962,14 @@ public abstract class PanelView extends FrameLayout {
         });
         animator.start();
         mHeightAnimator = animator;
-        mKeyguardBottomArea.getIndicationView().animate()
+        mKeyguardBottomArea.getShortcutsContainer().animate()
                 .translationY(-mHintDistance)
                 .setDuration(250)
                 .setInterpolator(mFastOutSlowInInterpolator)
                 .withEndAction(new Runnable() {
                     @Override
                     public void run() {
-                        mKeyguardBottomArea.getIndicationView().animate()
+                        mKeyguardBottomArea.getShortcutsContainer().animate()
                                 .translationY(0)
                                 .setDuration(450)
                                 .setInterpolator(mBounceInterpolator)
@@ -977,6 +977,7 @@ public abstract class PanelView extends FrameLayout {
                     }
                 })
                 .start();
+
     }
 
     /**
