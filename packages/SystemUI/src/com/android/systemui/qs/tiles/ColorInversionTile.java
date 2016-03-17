@@ -36,7 +36,6 @@ public class ColorInversionTile extends QSTile<QSTile.BooleanState> {
     private final AnimationIcon mDisable
             = new AnimationIcon(R.drawable.ic_invert_colors_disable_animation);
     private final SecureSetting mSetting;
-    private final UsageTracker mUsageTracker;
 
     private boolean mListening;
 
@@ -47,29 +46,11 @@ public class ColorInversionTile extends QSTile<QSTile.BooleanState> {
                 Secure.ACCESSIBILITY_DISPLAY_INVERSION_ENABLED) {
             @Override
             protected void handleValueChanged(int value, boolean observedChange) {
-                if (value != 0 || observedChange) {
-                    mUsageTracker.trackUsage();
-                }
                 if (mListening) {
                     handleRefreshState(value);
                 }
             }
         };
-        mUsageTracker = new UsageTracker(host.getContext(),
-                Prefs.Key.COLOR_INVERSION_TILE_LAST_USED, ColorInversionTile.class,
-                R.integer.days_to_show_color_inversion_tile);
-        if (mSetting.getValue() != 0 && !mUsageTracker.isRecentlyUsed()) {
-            mUsageTracker.trackUsage();
-        }
-        mUsageTracker.setListening(true);
-        mSetting.setListening(true);
-    }
-
-    @Override
-    protected void handleDestroy() {
-        super.handleDestroy();
-        mUsageTracker.setListening(false);
-        mSetting.setListening(false);
     }
 
     @Override
@@ -79,7 +60,11 @@ public class ColorInversionTile extends QSTile<QSTile.BooleanState> {
 
     @Override
     public void setListening(boolean listening) {
+        if (mListening == listening) {
+            return;
+        }
         mListening = listening;
+        mSetting.setListening(mListening);
     }
 
     @Override
