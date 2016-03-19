@@ -21,4 +21,6 @@
 
     <dimen name="qs_detail_item_height_twoline">72dp</dimen>
 
+    <dimen name="battery_level_text_size_small">12sp</dimen>
+
 </resources>
