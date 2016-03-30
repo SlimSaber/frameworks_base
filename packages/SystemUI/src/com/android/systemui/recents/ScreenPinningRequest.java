@@ -235,8 +235,14 @@ public class ScreenPinningRequest implements View.OnClickListener {
 
             final int recentsBgVisibility =
                     showRecentsButton ? View.VISIBLE : View.INVISIBLE;
-            mLayout.findViewById(R.id.screen_pinning_recents_bg).setVisibility(recentsBgVisibility);
-            mLayout.findViewById(R.id.screen_pinning_recents_bg_light).setVisibility(recentsBgVisibility);
+            View recentsBG = mLayout.findViewById(R.id.screen_pinning_recents_bg);
+            if (recentsBG != null) {
+                recentsBG.setVisibility(recentsBgVisibility);
+            }
+            View recentsBGLight = mLayout.findViewById(R.id.screen_pinning_recents_bg_light);
+            if (recentsBGLight != null) {
+                recentsBGLight.setVisibility(recentsBgVisibility);
+            }
 
             addView(mLayout, getRequestLayoutParams(isLandscape));
         }
