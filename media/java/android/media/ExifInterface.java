@@ -1046,9 +1046,6 @@ public class ExifInterface {
     private static final Pattern sGpsTimestampPattern =
             Pattern.compile("^([0-9][0-9]):([0-9][0-9]):([0-9][0-9])$");
 
-    // Pattern to check non zero timestamp
-    private static final Pattern sNonZeroTimePattern = Pattern.compile(".*[1-9].*");
-
     /**
      * Reads Exif tags from the specified image file.
      */
@@ -1506,7 +1503,7 @@ public class ExifInterface {
      * @hide
      */
     public long getDateTime() {
-        String dateTimeString = mAttributes.get(TAG_DATETIME);
+        String dateTimeString = getAttribute(TAG_DATETIME);
         if (dateTimeString == null
                 || !sNonZeroTimePattern.matcher(dateTimeString).matches()) return -1;
 
